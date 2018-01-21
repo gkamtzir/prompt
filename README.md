@@ -12,4 +12,4 @@ The code is in the shell.c file. Use the terminal to build, execute or delete th
     $ ./shell <batch file>
 	$ make clean
 	
-Georgios Kamtziridis, Winter Semester 2017-2018
+Georgios Kamtziridis 8542, Winter Semester 2017-2018
