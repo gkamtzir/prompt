@@ -4,7 +4,7 @@ all: shell
 
 shell: shell.c
 	$(CC) -o shell shell.c
-	
-clean:
-	rm shell
+	$(CC) -o shell_strict -D STRICT shell.c
 
+clean:
+	rm shell shell_strict

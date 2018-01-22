@@ -3,6 +3,20 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <ctype.h>
+
+//STRICT_MODE: 0
+//When a command execution fails and there is not a ';'
+//delimiter in the remaining command, the program prints
+//an error message and returns to the prompt.
+//STRICT_MODE: 1
+//If the previous scenario occurs, the program exits,
+//instead of returning to the prompt.
+#ifdef STRICT
+    #define STRICT_MODE 1
+#else
+    #define STRICT_MODE 0
+#endif
 
 #define COMMAND_LENGTH 512
 #define BATCH_MODE 1
@@ -44,6 +58,29 @@ int main(int argc, char **argv)
             printf("Could not open file \n");
             exit(1);
         }
+
+        //Checking if the file is empty.
+        char c;
+        int empty = 1;
+        while((c = fgetc(file)) != EOF)
+        {
+            if (isalnum(c))
+            {
+                empty = 0;
+                break;
+            }
+        }
+
+        if (empty)
+        {
+            printf("The batch file is empty \n");
+            exit(1);
+        }
+
+        //Setting the pointer to the beginning of
+        //the file.
+        fseek(file, 0, SEEK_SET);
+
     }
     else
     {
@@ -63,7 +100,7 @@ int main(int argc, char **argv)
                 fclose(file);
                 exit(1);
             }
-            
+
             //Verifying the command.
             if (!verify_command(command))
             {
@@ -116,7 +153,7 @@ int main(int argc, char **argv)
                     _exit(1);
 
                 }
-                
+
                 if (execvp(args[0], args) == -1)
                 {
                     printf("Cound not execute this command \n");
@@ -127,7 +164,7 @@ int main(int argc, char **argv)
             else
             {
 
-                //Waiting for the child-process 
+                //Waiting for the child-process
                 //to exit.
                 int status;
                 pid = wait(&status);
@@ -149,6 +186,7 @@ int main(int argc, char **argv)
                 }
                 else
                 {
+
                     if (commands[i].right == 1)
                     {
                         //Checking if there is a ';' delimiter in the remaining
@@ -158,8 +196,18 @@ int main(int argc, char **argv)
                             i++;
                         }
                     }
-                    
+
                     i++;
+
+                    //If STRICT_MODE is set to 1 and there are no
+                    //remaining ';' delimiter the program exits.
+                    if (STRICT_MODE == 1)
+                    {
+                        if (i >= number_of_commands)
+                        {
+                            exit(1);
+                        }
+                    }
                 }
 
             }
@@ -201,7 +249,7 @@ int verify_command(char *command)
 
         i++;
     }
-    
+
     return 1;
 
 }
@@ -213,15 +261,15 @@ int parse_commands(Command commands[], char *command, char *delimiter)
     char *saveptr;
     static int i = 0;
     int temp;
-    
+
     token = strtok_r(command, delimiter, &saveptr);
-    
+
     while (token != NULL)
     {
         if (!strcmp(delimiter, ";"))
         {
             parse_commands(commands, token, "&&");
-            token = strtok_r(NULL, delimiter, &saveptr);   
+            token = strtok_r(NULL, delimiter, &saveptr);
             commands[i-1].right = 0;
         }
         else
@@ -229,7 +277,7 @@ int parse_commands(Command commands[], char *command, char *delimiter)
             commands[i].command = token;
             commands[i].right = 1;
             i++;
-            token = strtok_r(NULL, delimiter, &saveptr);   
+            token = strtok_r(NULL, delimiter, &saveptr);
         }
     }
 
