@@ -13,5 +13,5 @@ The code is in the shell.c file. Use the terminal to build, execute or delete th
     $ ./shell_strict
     $ ./shell_strict <batch file>
 	$ make clean
-
+    
 Georgios Kamtziridis, Winter Semester 2017-2018
