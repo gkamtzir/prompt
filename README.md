@@ -15,6 +15,8 @@ The code is in the shell.c file. Use the terminal to build, execute or delete th
     $ make clean
     
 Georgios Kamtziridis, Winter Semester 2017-2018
+    
+The following is a detailed documentation of the code (in Greek).
 
 ## Επεξήγηση προγράμματος
 
