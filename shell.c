@@ -30,7 +30,7 @@ typedef struct Command {
     int right;
 }  Command;
 
-int verify_command(char *command);
+int verify_command(char *command, char character, int allowed_occurrences);
 int parse_commands(Command commands[], char *command, char *delimiter);
 void parse_arguments(char **args, char *output);
 
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
             }
 
             //Verifying the command.
-            if (!verify_command(command))
+            if (!verify_command(command,'&', 2) || !verify_command(command, ';', 1))
             {
                 printf("Undefined delimiter \n");
                 continue;
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
             fgets(command, COMMAND_LENGTH, stdin);
 
             //Verifying the command.
-            if (!verify_command(command))
+            if (!verify_command(command,'&', 2) || !verify_command(command, ';', 1))
             {
                 printf("Undefined delimiter \n");
                 continue;
@@ -223,19 +223,20 @@ int main(int argc, char **argv)
 
 }
 
-int verify_command(char *command)
+int verify_command(char *command, char character, int allowed_occurrences)
 {
 
     int i = 0;
     int counter = 0;
+
     while (command[i] != '\0')
     {
-        if (command[i] == '&')
+        if (command[i] == character)
         {
 
             counter++;
 
-            if (counter == 3)
+            if (counter == allowed_occurrences + 1)
             {
                 return 0;
             }
@@ -243,7 +244,7 @@ int verify_command(char *command)
         }
         else
         {
-            if (counter == 1)
+            if (counter > 0 && counter < allowed_occurrences)
             {
                 return 0;
             }
