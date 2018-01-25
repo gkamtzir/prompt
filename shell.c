@@ -31,6 +31,7 @@ typedef struct Command {
 }  Command;
 
 int verify_command(char *command, char character, int allowed_occurrences);
+int is_file_empty(FILE *file);
 int parse_commands(Command commands[], char *command, char *delimiter);
 void parse_arguments(char **args, char *output);
 
@@ -63,18 +64,7 @@ int main(int argc, char **argv)
         }
 
         //Checking if the file is empty.
-        char c;
-        int empty = 1;
-        while((c = fgetc(file)) != EOF)
-        {
-            if (isalnum(c))
-            {
-                empty = 0;
-                break;
-            }
-        }
-
-        if (empty)
+        if (is_file_empty(file))
         {
             printf("The batch file is empty \n");
             exit(1);
@@ -255,6 +245,24 @@ int verify_command(char *command, char character, int allowed_occurrences)
     }
 
     return 1;
+
+}
+
+int is_file_empty(FILE *file)
+{
+
+    char c;
+    int empty = 1;
+    while((c = fgetc(file)) != EOF)
+    {
+        if (isalnum(c))
+        {
+            empty = 0;
+            break;
+        }
+    }
+
+    return empty;
 
 }
 
