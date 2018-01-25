@@ -40,7 +40,7 @@ The following is a detailed documentation of the code (in Greek).
 
 ### Συναρτήσεις
 
-Πιο αναλυτικά, οι συναρτήσεις που χρησιμοποιούνται είναι τρεις.
+Πιο αναλυτικά, οι συναρτήσεις που χρησιμοποιούνται είναι οι εξής:
 
 #### int verify_command(char *command, char character, int allowed_occurrences)
 
