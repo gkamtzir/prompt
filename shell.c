@@ -108,7 +108,11 @@ int main(int argc, char **argv)
             printf(ANSI_COLOR_GREEN "kamtziridis_8542>" ANSI_COLOR_RESET);
 
             //Getting the command.
-            fgets(command, COMMAND_LENGTH, stdin);
+            if (fgets(command, COMMAND_LENGTH, stdin) == NULL)
+            {
+                printf("Could not read from prompt \n");
+                exit(1);
+            }
 
             //Verifying the command.
             if (!verify_command(command,'&', 2) || !verify_command(command, ';', 1))
