@@ -24,6 +24,8 @@
 #define COMMAND_LENGTH 512
 #define BATCH_MODE 1
 #define INTERACTIVE_MODE 2
+#define ERROR_STATUS_CODE 2
+#define EXIT_STATUS_CODE 10
 
 typedef struct Command {
     char *command;
@@ -97,7 +99,7 @@ int main(int argc, char **argv)
             //Verifying the command.
             if (!verify_command(command,'&', 2) || !verify_command(command, ';', 1))
             {
-                printf("Undefined delimiter \n");
+                printf("Undefined delimiter. \n");
                 continue;
             }
 
@@ -110,14 +112,14 @@ int main(int argc, char **argv)
             //Getting the command.
             if (fgets(command, COMMAND_LENGTH, stdin) == NULL)
             {
-                printf("Could not read from prompt \n");
+                printf("Could not read from prompt. \n");
                 exit(1);
             }
 
             //Verifying the command.
             if (!verify_command(command,'&', 2) || !verify_command(command, ';', 1))
             {
-                printf("Undefined delimiter \n");
+                printf("Undefined delimiter. \n");
                 continue;
             }
         }
@@ -135,7 +137,7 @@ int main(int argc, char **argv)
             if ((pid = fork()) < 0)
             {
 
-                printf("Could not fork \n");
+                printf("Could not fork. \n");
                 exit(1);
 
             }
@@ -147,14 +149,15 @@ int main(int argc, char **argv)
                 //Checking if the user wants to exit.
                 if (!strcmp(args[0], "quit"))
                 {
-                    _exit(1);
+
+                    _exit(EXIT_STATUS_CODE);
 
                 }
 
                 if (execvp(args[0], args) == -1)
                 {
-                    printf("Cound not execute this command \n");
-                    _exit(2);
+                    printf("Could not execute '%s' command. \n", args[0]);
+                    _exit(ERROR_STATUS_CODE);
                 }
 
             }
@@ -173,15 +176,7 @@ int main(int argc, char **argv)
                 {
                     i++;
                 }
-                else if (status == 1)
-                {
-                    if (program_mode == BATCH_MODE)
-                    {
-                        fclose(file);
-                    }
-                    exit(1);
-                }
-                else
+                else if (status == ERROR_STATUS_CODE)
                 {
 
                     if (commands[i].right == 1)
@@ -205,6 +200,23 @@ int main(int argc, char **argv)
                             exit(1);
                         }
                     }
+
+                }
+                else if (status == EXIT_STATUS_CODE)
+                {
+
+                    if (program_mode == BATCH_MODE)
+                    {
+                        fclose(file);
+                    }
+                    exit(1);
+
+                }
+                else
+                {
+                    //Unhandled status code.
+                    //In order to break the while loop.
+                    i = number_of_commands;
                 }
 
             }
