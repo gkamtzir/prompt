@@ -40,9 +40,9 @@ The following is a detailed documentation of the code (in Greek).
 
 Πιο αναλυτικά, οι συναρτήσεις που χρησιμοποιούνται είναι τρεις.
 
-#### verify_command(char *command)
+#### verify_command(char *command, char character, int allowed_occurrences)
 
-Η συνάρτηση αυτή παίρνει σαν όρισμα την είσοδο που δίνει ο χρήστης στο _interactive mode_ ή μια γραμμή από το αρχείο που διαβάζεται στο _batch mode_. Ελέγχει αν υπάρχει _delimiter_ ‘&&’ και όχι ‘&’, μιας και η _strtok_ δεν μπορεί να εντοπίσει διαφορές ανάμεσα στις δύο αυτές περιπτώσεις. Για ευκολία, στη περίπτωση όπου δίνεται σαν _delimiter_ ο ‘;;’ θεωρούμε ότι υπάρχει μια κενή εντολή μεταξύ τους η οποία παραλείπεται. 
+Η συνάρτηση αυτή παίρνει σαν όρισμα την είσοδο που δίνει ο χρήστης στο _interactive mode_ ή μια γραμμή από το αρχείο που διαβάζεται στο _batch mode_, έναν χαρακτήρα και τον αριθμό των επιτρεπτών, συνεχόμενων, εμφανίσεών του. Ουσιαστικά ελέγχει αν υπάρχει ο _delimiter_ ‘character * allowed_occurrences’, μιας και η _strtok_ δεν μπορεί να εντοπίσει διαφορές ανάμεσα σε περιπτώσεις όπως ‘&’ με ‘&&’ ή ‘;’ με ‘;;’.
 
 #### parse_commands(Command commands[], char *command, char *delimiter)
 
