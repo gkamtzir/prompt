@@ -18,6 +18,9 @@
     #define STRICT_MODE 0
 #endif
 
+#define ANSI_COLOR_GREEN "\x1b[32m"
+#define ANSI_COLOR_RESET "\x1b[0m"
+
 #define COMMAND_LENGTH 512
 #define BATCH_MODE 1
 #define INTERACTIVE_MODE 2
@@ -112,7 +115,7 @@ int main(int argc, char **argv)
         else
         {
             //Shell prompt.
-            printf("kamtziridis_8542>");
+            printf(ANSI_COLOR_GREEN "kamtziridis_8542>" ANSI_COLOR_RESET);
 
             //Getting the command.
             fgets(command, COMMAND_LENGTH, stdin);
