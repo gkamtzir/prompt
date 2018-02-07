@@ -124,8 +124,9 @@ int main(int argc, char **argv)
             }
         }
 
-        //Removing the new line character
-        output = strtok(command, "\n");
+        //Removing the new line character.
+        //Also checking for the \r character.
+        output = strtok(command, "\r\n");
 
         int number_of_commands = parse_commands(commands, output, ";");
 
