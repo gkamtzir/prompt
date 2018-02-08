@@ -27,9 +27,7 @@
 #define MAX_ARGUMENT_LENGTH 400
 #define BATCH_MODE 1
 #define INTERACTIVE_MODE 2
-#define EXIT_STATUS_CODE 10
 #define ERROR_STATUS_CODE 11
-#define NUMBER_EXCEEDED_CODE 12
 
 typedef struct Command {
     char *command;
@@ -51,14 +49,8 @@ int main(int argc, char **argv)
 
     //The first element of the args array is the actual command.
     args = (char **)malloc(MAX_NUMBER_OF_ARGUMENTS * sizeof(char *));
+
     int i;
-    for (i = 0; i < MAX_NUMBER_OF_ARGUMENTS; i++)
-    {
-
-        args[i] = (char *)malloc(MAX_ARGUMENT_LENGTH * sizeof(char));
-
-    }
-
     for (i = 0; i < MAX_NUMBER_OF_COMMANDS; i++)
     {
 
@@ -91,7 +83,8 @@ int main(int argc, char **argv)
         if (is_file_empty(file))
         {
             free_memory(args, commands);
-            printf("The batch file is empty \n");
+            fclose(file);
+            printf("The batch file is empty. \n");
             exit(1);
         }
 
@@ -168,6 +161,30 @@ int main(int argc, char **argv)
         while (i < number_of_commands)
         {
 
+            if (parse_arguments(args, commands[i].command))
+            {
+
+                printf("Too many arguments used in a command.\n"
+                "Currently, the maximum number of arguments is %d.\n",
+                MAX_NUMBER_OF_ARGUMENTS - 1);
+                break;
+
+            }
+
+            //Checking if the user wants to exit.
+            if (!strcmp(args[0], "quit"))
+            {
+
+                if (program_mode == BATCH_MODE)
+                {
+                    fclose(file);
+                }
+
+                free_memory(args, commands);
+                exit(1);
+
+            }
+
             if ((pid = fork()) < 0)
             {
 
@@ -179,27 +196,14 @@ int main(int argc, char **argv)
             else if (pid == 0)
             {
 
-                if (parse_arguments(args, commands[i].command))
-                {
-
-                    printf("Too many arguments used in a command.\n"
-                    "Currently, the maximum number of arguments is %d.\n",
-                    MAX_NUMBER_OF_ARGUMENTS - 1);
-                    _exit(NUMBER_EXCEEDED_CODE);
-
-                }
-
-                //Checking if the user wants to exit.
-                if (!strcmp(args[0], "quit"))
-                {
-
-                    _exit(EXIT_STATUS_CODE);
-
-                }
-
                 if (execvp(args[0], args) == -1)
                 {
                     printf("Could not execute '%s' command. \n", args[0]);
+                    if (program_mode == BATCH_MODE)
+                    {
+                        fclose(file);
+                    }
+                    free_memory(args, commands);
                     _exit(ERROR_STATUS_CODE);
                 }
 
@@ -219,23 +223,6 @@ int main(int argc, char **argv)
                 if (status == 0)
                 {
                     i++;
-                }
-                else if (status == EXIT_STATUS_CODE)
-                {
-                    if (program_mode == BATCH_MODE)
-                    {
-                        fclose(file);
-                    }
-
-                    free_memory(args, commands);
-                    exit(1);
-                }
-                else if (status == NUMBER_EXCEEDED_CODE)
-                {
-                    //The number of arguments is greater than
-                    //the MAX_NUMBER_OF_ARGUMENTS.
-                    //In order to break the while loop:
-                    i = number_of_commands;
                 }
                 else
                 {
@@ -283,10 +270,6 @@ int main(int argc, char **argv)
 void free_memory(char **args, Command commands[])
 {
     int i;
-    for (i = 0; i < MAX_NUMBER_OF_ARGUMENTS; i++)
-    {
-        free(args[i]);
-    }
     free(args);
     for (i = 0; i < MAX_NUMBER_OF_COMMANDS; i++)
     {
@@ -408,9 +391,9 @@ int parse_arguments(char **args, char* command)
     token = strtok(command, " ");
     while (token != NULL)
     {
-        strcpy(args[i], token);
+        args[i] = token;
         i++;
-        if (i == MAX_NUMBER_OF_ARGUMENTS)
+        if (i == MAX_NUMBER_OF_ARGUMENTS - 1)
         {
             return 1;
         }
