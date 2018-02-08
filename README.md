@@ -53,7 +53,7 @@ The following is a detailed documentation of the code (in Greek).
 
 #### int is_file_empty(FILE *file)
 
-Η συνάρτηση αυτή παίρνει σαν όρισμα έναν pointer σε αρχείο και ελέγχει αν είναι άδειο. Για να μην είναι άδειο ένα αρχείο θα πρέπει να τουλάχιστον έναν αλφαριθμητικό χαρακτήρα.
+Η συνάρτηση αυτή παίρνει σαν όρισμα έναν pointer σε αρχείο και ελέγχει αν είναι άδειο. Για να μην είναι άδειο ένα αρχείο θα πρέπει να περιέχει τουλάχιστον έναν αλφαριθμητικό χαρακτήρα.
 
 #### int parse_commands(Command commands[], char *command, char *delimiter)
 
