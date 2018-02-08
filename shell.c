@@ -82,6 +82,7 @@ int main(int argc, char **argv)
         file = fopen(argv[1], "r");
         if (file == NULL)
         {
+            free_memory(args, commands);
             printf("Could not open file \n");
             exit(1);
         }
@@ -89,6 +90,7 @@ int main(int argc, char **argv)
         //Checking if the file is empty.
         if (is_file_empty(file))
         {
+            free_memory(args, commands);
             printf("The batch file is empty \n");
             exit(1);
         }
@@ -113,6 +115,7 @@ int main(int argc, char **argv)
             //Reading from file line by line.
             if (fgets(command, COMMAND_LENGTH, file) == NULL)
             {
+                free_memory(args, commands);
                 fclose(file);
                 exit(1);
             }
@@ -133,6 +136,7 @@ int main(int argc, char **argv)
             //Getting the command.
             if (fgets(command, COMMAND_LENGTH, stdin) == NULL)
             {
+                free_memory(args, commands);
                 printf("Could not read from prompt. \n");
                 exit(1);
             }
@@ -167,6 +171,7 @@ int main(int argc, char **argv)
             if ((pid = fork()) < 0)
             {
 
+                free_memory(args, commands);
                 printf("Could not fork. \n");
                 exit(1);
 
