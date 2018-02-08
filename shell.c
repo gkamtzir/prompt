@@ -22,28 +22,49 @@
 #define ANSI_COLOR_RESET "\x1b[0m"
 
 #define COMMAND_LENGTH 512
+#define MAX_NUMBER_OF_COMMANDS 10
+#define MAX_NUMBER_OF_ARGUMENTS 11
+#define MAX_ARGUMENT_LENGTH 400
 #define BATCH_MODE 1
 #define INTERACTIVE_MODE 2
-#define ERROR_STATUS_CODE 2
 #define EXIT_STATUS_CODE 10
+#define ERROR_STATUS_CODE 11
+#define NUMBER_EXCEEDED_CODE 12
 
 typedef struct Command {
     char *command;
     int right;
 }  Command;
 
+void free_memory(char **args, Command commands[]);
 int verify_command(char *command, char character, int allowed_occurrences);
 int is_file_empty(FILE *file);
 int parse_commands(Command commands[], char *command, char *delimiter);
-void parse_arguments(char **args, char *output);
+int parse_arguments(char **args, char *command);
 
 int main(int argc, char **argv)
 {
 
     char command[COMMAND_LENGTH];
-    Command commands[COMMAND_LENGTH];
-    char *args[COMMAND_LENGTH];
-    char *output;
+    Command commands[MAX_NUMBER_OF_COMMANDS];
+    char **args;
+
+    //The first element of the args array is the actual command.
+    args = (char **)malloc(MAX_NUMBER_OF_ARGUMENTS * sizeof(char *));
+    int i;
+    for (i = 0; i < MAX_NUMBER_OF_ARGUMENTS; i++)
+    {
+
+        args[i] = (char *)malloc(MAX_ARGUMENT_LENGTH * sizeof(char));
+
+    }
+
+    for (i = 0; i < MAX_NUMBER_OF_COMMANDS; i++)
+    {
+
+        commands[i].command = (char *)malloc(COMMAND_LENGTH * sizeof(char));
+
+    }
 
     FILE *file;
 
@@ -126,9 +147,17 @@ int main(int argc, char **argv)
 
         //Removing the new line character.
         //Also checking for the \r character.
-        output = strtok(command, "\r\n");
+        //Getting the number of commands and
+        //the actual commands.
+        int number_of_commands = parse_commands(commands, strtok(command, "\r\n"), ";");
 
-        int number_of_commands = parse_commands(commands, output, ";");
+        if (number_of_commands == -1)
+        {
+            printf("You have exceeded the maximum number of commands.\n"
+            "Currently, the maximum number of commands is %d.\n",
+            MAX_NUMBER_OF_COMMANDS);
+            continue;
+        }
 
         int i = 0;
 
@@ -145,7 +174,15 @@ int main(int argc, char **argv)
             else if (pid == 0)
             {
 
-                parse_arguments(args, commands[i].command);
+                if (parse_arguments(args, commands[i].command))
+                {
+
+                    printf("Too many arguments used in a command.\n"
+                    "Currently, the maximum number of arguments is %d.\n",
+                    MAX_NUMBER_OF_ARGUMENTS - 1);
+                    _exit(NUMBER_EXCEEDED_CODE);
+
+                }
 
                 //Checking if the user wants to exit.
                 if (!strcmp(args[0], "quit"))
@@ -173,11 +210,29 @@ int main(int argc, char **argv)
                     status = WEXITSTATUS(status);
                 }
 
+                //Success.
                 if (status == 0)
                 {
                     i++;
                 }
-                else if (status == ERROR_STATUS_CODE)
+                else if (status == EXIT_STATUS_CODE)
+                {
+                    if (program_mode == BATCH_MODE)
+                    {
+                        fclose(file);
+                    }
+
+                    free_memory(args, commands);
+                    exit(1);
+                }
+                else if (status == NUMBER_EXCEEDED_CODE)
+                {
+                    //The number of arguments is greater than
+                    //the MAX_NUMBER_OF_ARGUMENTS.
+                    //In order to break the while loop:
+                    i = number_of_commands;
+                }
+                else
                 {
 
                     if (commands[i].right == 1)
@@ -198,26 +253,16 @@ int main(int argc, char **argv)
                     {
                         if (i >= number_of_commands)
                         {
+                            if (program_mode == BATCH_MODE)
+                            {
+                                fclose(file);
+                            }
+
+                            free_memory(args, commands);
                             exit(1);
                         }
                     }
 
-                }
-                else if (status == EXIT_STATUS_CODE)
-                {
-
-                    if (program_mode == BATCH_MODE)
-                    {
-                        fclose(file);
-                    }
-                    exit(1);
-
-                }
-                else
-                {
-                    //Unhandled status code.
-                    //In order to break the while loop.
-                    i = number_of_commands;
                 }
 
             }
@@ -228,6 +273,20 @@ int main(int argc, char **argv)
 
     return 0;
 
+}
+
+void free_memory(char **args, Command commands[])
+{
+    int i;
+    for (i = 0; i < MAX_NUMBER_OF_ARGUMENTS; i++)
+    {
+        free(args[i]);
+    }
+    free(args);
+    for (i = 0; i < MAX_NUMBER_OF_COMMANDS; i++)
+    {
+        free(commands[i].command);
+    }
 }
 
 int verify_command(char *command, char character, int allowed_occurrences)
@@ -297,15 +356,24 @@ int parse_commands(Command commands[], char *command, char *delimiter)
     {
         if (!strcmp(delimiter, ";"))
         {
-            parse_commands(commands, token, "&&");
+            if (parse_commands(commands, token, "&&") == -1)
+            {
+                //Initializing the i variable.
+                i = 0;
+                return -1;
+            }
             token = strtok_r(NULL, delimiter, &saveptr);
             commands[i-1].right = 0;
         }
         else
         {
-            commands[i].command = token;
+            strcpy(commands[i].command, token);
             commands[i].right = 1;
             i++;
+            if (i == MAX_NUMBER_OF_COMMANDS)
+            {
+                return -1;
+            }
             token = strtok_r(NULL, delimiter, &saveptr);
         }
     }
@@ -323,7 +391,7 @@ int parse_commands(Command commands[], char *command, char *delimiter)
 
 }
 
-void parse_arguments(char **args, char* command)
+int parse_arguments(char **args, char* command)
 {
 
     char *token;
@@ -335,12 +403,15 @@ void parse_arguments(char **args, char* command)
     token = strtok(command, " ");
     while (token != NULL)
     {
-
-        args[i] = token;
+        strcpy(args[i], token);
         i++;
+        if (i == MAX_NUMBER_OF_ARGUMENTS)
+        {
+            return 1;
+        }
         token = strtok(NULL, " ");
-
     }
     args[i] = NULL;
+    return 0;
 
 }
