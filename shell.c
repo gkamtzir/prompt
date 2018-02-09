@@ -50,11 +50,22 @@ int main(int argc, char **argv)
     //The first element of the args array is the actual command.
     args = (char **)malloc(MAX_NUMBER_OF_ARGUMENTS * sizeof(char *));
 
+    if (args == NULL)
+    {
+        printf("Could not allocate memory. \n");
+        exit(1);
+    }
+
     int i;
     for (i = 0; i < MAX_NUMBER_OF_COMMANDS; i++)
     {
 
         commands[i].command = (char *)malloc(COMMAND_LENGTH * sizeof(char));
+        if (commands[i].command == NULL)
+        {
+            printf("Could not allocate memory. \n");
+            exit(1);
+        }
 
     }
 
